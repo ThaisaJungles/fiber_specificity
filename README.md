@@ -8,7 +8,7 @@ Included files
 - Code for data analysis in Qiime2 (code_qiime2.txt)
 - Metadata (metadata.txt) 
 - Grouped metadata for longitudinal analysis (metadata.grouped.txt)
-* Raw reads are available in National Center for Biotechnology Information Sequence Read Archive (NCBI; SRA), Read Archive (NCBI; SRA), Bioproject PRJNA640404, Biosamples 15317177- 15317354. Naive Bayes classifiers trained on Greengenes (v.13.8) from 515F/806R region of sequences formatted to qiime2 can be downloaded at: https://docs.qiime2.org/2020.2/data-resources/
+* Raw reads are available in National Center for Biotechnology Information Sequence Read Archive (NCBI; SRA), Read Archive (NCBI; SRA), Bioproject PRJNA640404, Biosamples SAMN15317177- 354. Naive Bayes classifiers trained on Greengenes (v.13.8) from 515F/806R region of sequences formatted to qiime2 can be downloaded at: https://docs.qiime2.org/2020.2/data-resources/
 
 •	R script and files used for analysis
 - Script for data analysis in R (specifcity_all.R)
