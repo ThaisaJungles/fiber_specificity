@@ -1,0 +1,178 @@
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path raw \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path qiime_out/demux-paired-end.qza
+
+qiime demux summarize \
+  --i-data qiime_out/demux-paired-end.qza \
+  --o-visualization qiime_out/demux-paired-end.qzv
+
+qiime quality-filter q-score \
+ --i-demux qiime_out/demux-paired-end.qza \
+ --o-filtered-sequences qiime_out/demux-filtered.qza \
+ --o-filter-stats qiime_out/demux-filter-stats.qza
+
+qiime deblur denoise-16S \
+  --i-demultiplexed-seqs qiime_out/demux-filtered.qza \
+  --p-trim-length 153 \
+  --o-representative-sequences qiime_out/rep-seqs-deblur.qza \
+  --o-table qiime_out/table-deblur.qza \
+  --p-sample-stats \
+  --o-stats qiime_out/deblur-stats.qza
+
+qiime metadata tabulate \
+  --m-input-file qiime_out/demux-filter-stats.qza \
+  --o-visualization qiime_out/demux-filter-stats.qzv
+
+qiime deblur visualize-stats \
+  --i-deblur-stats qiime_out/deblur-stats.qza \
+  --o-visualization qiime_out/deblur-stats.qzv
+
+qiime feature-table summarize \
+  --i-table qiime_out/table.qza \
+  --o-visualization qiime_out/table.qzv \
+  --m-sample-metadata-file metadata.txt    
+
+qiime feature-table tabulate-seqs \
+  --i-data qiime_out/rep-seqs.qza \
+  --o-visualization qiime_out/rep-seqs.qzv
+
+qiime phylogeny align-to-tree-mafft-fasttree \
+  --i-sequences qiime_out/rep-seqs.qza \
+  --o-alignment qiime_out/aligned-rep-seqs.qza \
+  --o-masked-alignment qiime_out/masked-aligned-rep-seqs.qza \
+  --o-tree qiime_out/unrooted-tree.qza \
+  --o-rooted-tree qiime_out/rooted-tree.qza
+
+#Analysis of microbiota at baseline
+
+qiime feature-table filter-samples \
+  --i-table qiime_out/table.qza \
+  --m-metadata-file metadata.txt \
+  --p-where "time_Initial_Final='Initial'" \
+  --o-filtered-table qiime_out/initial-table.qza
+
+qiime feature-table summarize \
+  --i-table qiime_out/initial-table.qza \
+  --o-visualization qiime_out/initial-table.qzv \
+  --m-sample-metadata-file metadata.txt 
+
+qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny rooted-tree.qza \
+  --i-table initial-table.qza \
+  --p-sampling-depth 3600 \
+  --m-metadata-file ../metadata.txt \
+  --output-dir core-metrics-results-initial
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results-initial/observed_otus_vector.qza \
+  --m-metadata-file ../metadata.txt  \
+  --o-visualization core-metrics-results-initial/observed_otus_vector-significance.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results-initial/evenness_vector.qza \
+  --m-metadata-file ../metadata.txt  \
+  --o-visualization core-metrics-results-initial/evenness-group-significance.qzv
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results-initial/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file ../metadata.txt  \
+  --m-metadata-column donor \
+  --o-visualization core-metrics-results-initial/unweighted-unifrac-time-significance.qzv \
+  --p-pairwise
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results-initial/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file ../metadata.txt  \
+  --m-metadata-column donor \
+  --o-visualization core-metrics-results-initial/weighted-unifrac-time-significance.qzv \
+  --p-pairwise
+
+qiime feature-table group \
+  --i-table table.qza \
+  --p-axis sample \
+  --m-metadata-file ../metadata.txt \
+  --m-metadata-column unique \
+  --p-mode mean-ceiling \
+  --o-grouped-table grouped-table.qza
+
+qiime taxa barplot \
+  --i-table grouped-table.qza \
+  --i-taxonomy taxonomy_gg.qza \
+  --m-metadata-file ../metadata.grouped.txt  \
+  --o-visualization taxa-bar-plots-grouped.qzv
+
+#Analysis of treated samples (excluding glucan outliers - results from glucan treated samples from donnor 7,9 and 10 -, and baseline microbiota)
+
+qiime feature-table filter-samples \
+  --i-table table.qza \
+  --m-metadata-file ../metadata.txt \
+  --p-where "treatment_II_B IN ('Blank','II','RS','FOS','Pectin') OR Donor IN ('A','B', 'C','D','E','F','H')" \
+  --o-filtered-table nooutliers-filtered-table.qza
+
+qiime feature-table filter-samples \
+  --i-table nooutliers-filtered-table.qza \
+  --m-metadata-file ../metadata.txt \
+  --p-where "treatment_II_B IN ('Blank','Glucan','RS','FOS','Pectin')" \
+  --o-filtered-table nooutliers-filtered-table.qza
+
+qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny rooted-tree.qza \
+  --i-table nooutliers-filtered-table.qza \
+  --p-sampling-depth 3600 \
+  --m-metadata-file ../metadata.txt \
+  --output-dir core-metrics-results-nooutliers
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results-nooutliers/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file ../metadata.txt  \
+  --m-metadata-column treatment_II_B \
+  --o-visualization core-metrics-results-nooutliers/weighted-unifrac-time-significance-permdisp.qzv \
+  --p-pairwise \
+  --p-method 'permdisp'
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results-nooutliers/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file ../metadata.txt  \
+  --m-metadata-column treatment_II_B \
+  --o-visualization core-metrics-results-nooutliers/weighted-unifrac-time-significance.qzv \
+  --p-pairwise
+
+#Longitudinal analysis
+
+qiime longitudinal pairwise-distances \
+  --i-distance-matrix core-metrics-results-nooutliers/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file ../metadata_long.txt \
+  --p-group-column treatment_B \
+  --p-state-column time_Initial_Final \
+  --p-state-1 Initial \
+  --p-state-2 Final \
+  --p-individual-id-column donor \
+  --p-replicate-handling random \
+  --o-visualization weighted_pairwise-distances-long.qzv
+
+qiime longitudinal pairwise-differences \
+  --m-metadata-file ../metadata_long.txt \
+  --m-metadata-file core-metrics-results-nooutliers/weighted_unifrac_pcoa_results.qza \
+  --p-group-column treatment_B \
+  --p-metric "Axis 1" \
+  --p-state-column time_Initial_Final \
+  --p-state-1 Initial \
+  --p-state-2 Final \
+  --p-individual-id-column donor \
+  --p-replicate-handling random \
+  --o-visualization weighted_unifrac_pcoa_results_axis1_pairwise-differences-long.qzv
+
+qiime longitudinal pairwise-differences \
+  --m-metadata-file ../metadata_long.txt \
+  --m-metadata-file core-metrics-results-nooutliers/weighted_unifrac_pcoa_results.qza \
+  --p-group-column treatment_B \
+  --p-metric "Axis 2" \
+  --p-state-column time_Initial_Final \
+  --p-state-1 Initial \
+  --p-state-2 Final \
+  --p-individual-id-column donor \
+  --p-replicate-handling random \
+  --o-visualization weighted_unifrac_pcoa_results_axis2_pairwise-differences-long.qzv
+
