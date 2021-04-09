@@ -45,6 +45,13 @@ qiime phylogeny align-to-tree-mafft-fasttree \
   --o-tree qiime_out/unrooted-tree.qza \
   --o-rooted-tree qiime_out/rooted-tree.qza
 
+qiime diversity alpha-rarefaction \
+  --i-table table.qza \
+  --i-phylogeny rooted-tree.qza \
+  --p-max-depth 10133 \
+  --m-metadata-file ../metadata.txt  \
+  --o-visualization alpha-rarefaction-max.qzv
+
 #Analysis of microbiota at baseline
 
 qiime feature-table filter-samples \
@@ -88,6 +95,22 @@ qiime diversity beta-group-significance \
   --m-metadata-column donor \
   --o-visualization core-metrics-results-initial/weighted-unifrac-time-significance.qzv \
   --p-pairwise
+
+#Obtaining the R2 value from Adonis
+
+qiime diversity adonis \
+  --i-distance-matrix weighted_unifrac_distance_matrix.qza \
+  --p-formula "donor" \
+  --m-metadata-file metadata_adonisinitial.txt \
+  --output-dir adonis-initial.qzv
+
+qiime diversity adonis \
+  --i-distance-matrix unweighted_unifrac_distance_matrix.qza \
+  --p-formula "donor" \
+  --m-metadata-file metadata_adonis.txt \
+  --output-dir adonis-initial-unweighted.qzv
+
+#Bar plost of relative abundance
 
 qiime feature-table group \
   --i-table table.qza \
@@ -138,6 +161,15 @@ qiime diversity beta-group-significance \
   --m-metadata-column treatment_II_B \
   --o-visualization core-metrics-results-nooutliers/weighted-unifrac-time-significance.qzv \
   --p-pairwise
+
+#PCoA plot - means (for trajectory analyisis)
+qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny rooted-tree.qza \
+  --i-table grouped-table.qza \
+  --p-sampling-depth 3600 \
+  --m-metadata-file ../metadata.grouped.txt \
+  --output-dir core-metrics-results-grouped
+  
 
 #Longitudinal analysis
 
