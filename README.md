@@ -15,6 +15,7 @@ Included files
 - Metadata (metadata.csv)
 - Bacterial counts at species level at baseline (table_initial_specie.csv)
 - Bacterial counts at species level for all treatments (level-7_gg.csv)
-- Relative abundance of bacterial species, higher than 1%: hightha1perc_forR.csv
+- Relative abundance of bacterial species, higher than 1% (hightha1perc_forR.csv)
 - SCFA production in mM (SCFA_forR_ correlation.csv)
-- SCFA production in % : (2(1).csv)
+- SCFA production in % (2(1).csv)
+- ASV table for ANCOM analysis (taxtable_ancom)
