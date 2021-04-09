@@ -13,8 +13,8 @@ Included files
 •	R script and files used for analysis
 - Script for data analysis in R (specifcity_all.R)
 - Metadata (metadata.csv)
-- Bacterial counts at species level at baseline (table_initial_specie.csv)
-- Bacterial counts at species level for all treatments (level-7_gg.csv)
+- ASV table at baseline (table_initial_specie.csv)
+- ASV table at species level for all treatments (level-7_gg.csv)
 - Relative abundance of bacterial species, higher than 1% (hightha1perc_forR.csv)
 - SCFA production in mM (SCFA_forR_ correlation.csv)
 - SCFA production in % (2(1).csv)
